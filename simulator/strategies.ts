@@ -20,7 +20,7 @@ export interface Strategy {
 }
 
 const singleTarget: Strategy = {
-  name: 'ST',
+  name: 'Single Target',
   logic: [
     [tft],
     [summonWhiteTigerStatue],
@@ -34,7 +34,7 @@ const singleTarget: Strategy = {
 }
 
 const singleTargetInfusionPrio: Strategy = {
-  name: 'STI',
+  name: 'Single Target, RSK for Infusion only',
   logic: [
     [tft],
     [summonWhiteTigerStatue],
@@ -53,7 +53,7 @@ const singleTargetInfusionPrio: Strategy = {
 }
 
 const multiTargetInfusionPrio: Strategy = {
-  name: 'MTI',
+  name: 'Multi target, RSK for Infusion only',
   logic: [
     [tft],
     [summonWhiteTigerStatue],
@@ -70,16 +70,16 @@ const multiTargetInfusionPrio: Strategy = {
   ],
 }
 
-export const strategies = {
+export const defaultStrategies = [
   singleTarget,
   singleTargetInfusionPrio,
   multiTargetInfusionPrio,
-}
+]
 
-export const targetStrategies: Record<number, Strategy[]> = {
-  1: [singleTarget],
-  2: [singleTarget],
-  3: [singleTargetInfusionPrio],
-  4: [multiTargetInfusionPrio],
-  5: [multiTargetInfusionPrio],
+export const bestStrategies: Record<number, Strategy> = {
+  1: singleTarget,
+  2: singleTarget,
+  3: singleTargetInfusionPrio,
+  4: multiTargetInfusionPrio,
+  5: multiTargetInfusionPrio,
 }

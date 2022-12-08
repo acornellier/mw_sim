@@ -6,7 +6,10 @@ import { SimulationStats } from '../components/SimulationStats'
 import { Simulation } from '../simulator/simulator'
 import { CharacterStats } from '../simulator/state'
 import { Talent, talentNames } from '../simulator/talents'
-import { NumericInput } from '../components/Input'
+import { NumericInput } from '../components/NumericInput'
+import { Strategy, bestStrategies } from '../simulator/strategies'
+import { CharacterStatsForm } from '../components/CharacterStatsForm'
+import { StrategySelect } from '../components/StrategySelect'
 
 const defaultCharacterStats: CharacterStats = {
   versatility: 0.1,
@@ -27,8 +30,10 @@ export const talentsToTest: Talent[] = [
 ]
 
 export default function Home() {
-  const [numTargets, setNumTargets] = useState(1)
   const [duration, setDuration] = useState(60)
+  const [numTargets, setNumTargets] = useState(1)
+  const [iterations, setIterations] = useState(100)
+  const [strategy, setStrategy] = useState<Strategy>(bestStrategies[1])
   const [characterStats, setCharacterStats] = useState(defaultCharacterStats)
   const [sims, setSims] = useState<Simulation[] | null>(null)
 
@@ -36,11 +41,17 @@ export default function Home() {
     const sims = simulate({
       characterStats,
       talentsToTest,
+      strategy,
       numTargets,
       duration,
-      iterationCount: 100,
+      iterations,
     })
     setSims(sims)
+  }
+
+  const onChangeTargets = (targets: number) => {
+    setStrategy(bestStrategies[targets])
+    setNumTargets(targets)
   }
 
   return (
@@ -54,22 +65,36 @@ export default function Home() {
       <main className="min-h-screen py-8 flex flex-col gap-4">
         <h1 className={styles.title}>Mistweaver Sim</h1>
         <div className="flex flex-col gap-4">
-          <NumericInput
-            label="Targets"
-            value={numTargets}
-            onChange={setNumTargets}
-            min={1}
-            max={5}
+          <div className="flex gap-4">
+            <NumericInput
+              label="Duration"
+              value={duration}
+              onChange={setDuration}
+              min={30}
+              max={300}
+            />
+            <NumericInput
+              label="Targets"
+              value={numTargets}
+              onChange={onChangeTargets}
+              min={1}
+              max={5}
+            />
+            <NumericInput
+              label="Iterations"
+              value={iterations}
+              onChange={setIterations}
+              min={1}
+              max={10_000}
+            />
+          </div>
+          <CharacterStatsForm
+            characterStats={characterStats}
+            onChange={setCharacterStats}
           />
-          <NumericInput
-            label="Duration"
-            value={duration}
-            onChange={setDuration}
-            min={30}
-            max={300}
-          />
+          <StrategySelect selectedStrategy={strategy} onChange={setStrategy} />
           <button
-            className="rounded-full px-4 py-1 bg-teal-500 hover:bg-teal-700 w-64"
+            className="rounded-full px-4 py-1 bg-teal-500 hover:bg-teal-700 w-64 font-bold"
             onClick={onSimulate}
           >
             Simulate!

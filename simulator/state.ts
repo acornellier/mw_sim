@@ -2,12 +2,12 @@
 import { talentNames } from './talents'
 
 export interface CharacterStats {
-  versatility: number
-  haste: number
-  criticalStrike: number
   attackPower: number
   spellPower: number
   weaponDps: number
+  haste: number
+  versatility: number
+  criticalStrike: number
 }
 
 interface Hit {

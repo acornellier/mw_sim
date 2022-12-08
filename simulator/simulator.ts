@@ -9,7 +9,7 @@ export interface SimulationOptions {
   talents: Record<string, number>
   numTargets: number
   duration: number
-  iterationCount: number
+  iterations: number
 }
 
 export class Simulation {
@@ -27,10 +27,10 @@ export class Simulation {
       talents,
       numTargets,
       duration,
-      iterationCount,
+      iterations,
     } = this.opts
 
-    this.stats = [...Array(iterationCount)].map(() => {
+    this.stats = [...Array(iterations)].map(() => {
       const state = new State(characterStats, talents)
 
       while (state.time < duration) {

@@ -101,7 +101,6 @@ class BlackoutKick extends Ability {
       state,
       damageHits.length
     )
-    console.log(resetProbability)
     if (Math.random() < resetProbability) {
       state.cooldowns[risingSunKick.name] = 0
     }

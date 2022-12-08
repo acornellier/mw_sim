@@ -1,5 +1,5 @@
 ﻿import { prettyTalents } from '../simulator/utils'
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import { Talent } from '../simulator/talents'
 import { Simulation } from '../simulator/simulator'
 
@@ -11,47 +11,54 @@ interface Props {
 
 export function SimulationStats({ index, sim, talentsToTest }: Props) {
   const [showCasts, setShowCasts] = useState(false)
+  const [showAbilityBreakdown, setShowAbilityBreakdown] = useState(false)
 
-  const name = `${index + 1}: ${sim.opts.strategy.name.padEnd(4)}`
-  const talents = prettyTalents(sim.opts.talents, talentsToTest)
-  const parts = [
-    name,
-    talents,
-    `${sim.averageDps()} dps (${sim.worstIteration().dps()}-${sim
-      .bestIteration()
-      .dps()})`,
-  ]
+  const dps = `${sim.averageDps()} dps (${sim.worstIteration().dps()}-${sim
+    .bestIteration()
+    .dps()})`
 
   const iter = sim.medianIteration()
   const abilityStats = iter.abilityStats()
 
   return (
-    <div>
-      <b>{parts.join(' | ')}</b>
-      <div>{`Median iteration details: ${iter.dps()} dps (${iter.damage()} dmg)`}</div>
-      {abilityStats.map((stat) => (
-        <div key={stat.name}>
-          {stat.name}: {stat.dps} dps ({stat.damagePercent}%) {stat.damage} dmg,{' '}
-          {stat.castCount} casts, {stat.hitCount} hits
-        </div>
-      ))}
+    <div className="flex flex-col gap-2">
+      <b>
+        {index + 1}. {prettyTalents(sim.opts.talents, talentsToTest)} | {dps}
+      </b>
       <button
-        className="rounded-full px-4 py-1 bg-gray-500 hover:bg-gray-700"
+        className="w-64 rounded-full px-4 py-1 bg-gray-300 hover:bg-gray-400"
+        onClick={() => setShowAbilityBreakdown(!showAbilityBreakdown)}
+      >
+        {showAbilityBreakdown ? 'Hide' : 'Show'} ability breakdown
+      </button>
+      {showAbilityBreakdown && (
+        <div>
+          <div>{`Median iteration details: ${iter.dps()} dps (${iter.damage()} dmg)`}</div>
+          {abilityStats.map((stat) => (
+            <div key={stat.name}>
+              {stat.name}: {stat.dps} dps ({stat.damagePercent}%) {stat.damage}{' '}
+              dmg, {stat.castCount} casts, {stat.hitCount} hits
+            </div>
+          ))}
+        </div>
+      )}
+      <button
+        className="w-64 rounded-full px-4 py-1 bg-gray-300 hover:bg-gray-400"
         onClick={() => setShowCasts(!showCasts)}
       >
         {showCasts ? 'Hide' : 'Show'} casts
       </button>
       {showCasts && (
-        <div>
-          <div className="flex">
-            <div className="w-12 font-bold">Time</div>
-            <div className="font-bold">Cast</div>
-          </div>
+        <div className="grid gap-x-2 grid-cols-[4rem_10rem_8rem]">
+          <div className="w-12 font-bold">Time</div>
+          <div className="font-bold">Cast</div>
+          <div className="font-bold">Damage</div>
           {iter.castHistory.map((cast, idx) => (
-            <div key={idx} className="flex">
+            <Fragment key={idx}>
               <div className="w-12">{Math.round(cast.time * 100) / 100}</div>
-              <div>{[cast.name, Math.round(cast.damage)].join(' -- ')}</div>
-            </div>
+              <div>{cast.name}</div>
+              <div>{Math.round(cast.damage)}</div>
+            </Fragment>
           ))}
         </div>
       )}
