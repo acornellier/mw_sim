@@ -1,16 +1,45 @@
 import Head from 'next/head'
 import styles from '../styles/Home.module.css'
 import { useState } from 'react'
-import { run, Simulation } from '../simulator/sim'
-import { SimulationStats } from '../components/IterationStats'
+import { simulate } from '../simulator/sim'
+import { SimulationStats } from '../components/SimulationStats'
+import { Simulation } from '../simulator/simulator'
+import { CharacterStats } from '../simulator/state'
+import { Talent, talentNames } from '../simulator/talents'
+import { NumericInput } from '../components/Input'
+
+const defaultCharacterStats: CharacterStats = {
+  versatility: 0.1,
+  haste: 0.1202,
+  criticalStrike: 0.1508,
+  attackPower: 6924,
+  spellPower: 6658,
+  weaponDps: 1593.47,
+}
+
+export const talentsToTest: Talent[] = [
+  talentNames.secret_infusion,
+  talentNames.secret_infusion_2,
+  talentNames.invokers_delight,
+  talentNames.focused_thunder,
+  talentNames.bonedust_brew,
+  talentNames.attenuation,
+]
 
 export default function Home() {
   const [numTargets, setNumTargets] = useState(1)
   const [duration, setDuration] = useState(60)
+  const [characterStats, setCharacterStats] = useState(defaultCharacterStats)
   const [sims, setSims] = useState<Simulation[] | null>(null)
 
   const onSimulate = () => {
-    const sims = run({ numTargets, duration, iterationCount: 100 })
+    const sims = simulate({
+      characterStats,
+      talentsToTest,
+      numTargets,
+      duration,
+      iterationCount: 100,
+    })
     setSims(sims)
   }
 
@@ -25,22 +54,22 @@ export default function Home() {
       <main className="min-h-screen py-8 flex flex-col gap-4">
         <h1 className={styles.title}>Mistweaver Sim</h1>
         <div className="flex flex-col gap-4">
-          <div className="flex gap-2">
-            <span>Targets</span>
-            <input
-              onChange={(e) => setNumTargets(Number(e.target.value))}
-              value={numTargets}
-            />
-          </div>
-          <div className="flex gap-2">
-            Duration
-            <input
-              onChange={(e) => setDuration(Number(e.target.value))}
-              value={duration}
-            />
-          </div>
+          <NumericInput
+            label="Targets"
+            value={numTargets}
+            onChange={setNumTargets}
+            min={1}
+            max={5}
+          />
+          <NumericInput
+            label="Duration"
+            value={duration}
+            onChange={setDuration}
+            min={30}
+            max={300}
+          />
           <button
-            className="rounded-full px-4 py-1 bg-cyan-500 hover:bg-cyan-700"
+            className="rounded-full px-4 py-1 bg-teal-500 hover:bg-teal-700 w-64"
             onClick={onSimulate}
           >
             Simulate!
@@ -52,9 +81,10 @@ export default function Home() {
             {sims.map((sim, idx) => {
               return (
                 <SimulationStats
-                  key={sim.nameWithTalents()}
+                  key={sim.nameWithTalents(talentsToTest)}
                   index={idx}
                   sim={sim}
+                  talentsToTest={talentsToTest}
                 />
               )
             })}

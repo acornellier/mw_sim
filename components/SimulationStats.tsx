@@ -1,17 +1,19 @@
-﻿import { Simulation } from '../simulator/sim'
-import { prettyTalents } from '../simulator/utils'
+﻿import { prettyTalents } from '../simulator/utils'
 import { useState } from 'react'
+import { Talent } from '../simulator/talents'
+import { Simulation } from '../simulator/simulator'
 
 interface Props {
   index: number
   sim: Simulation
+  talentsToTest: Talent[]
 }
 
-export function SimulationStats({ index, sim }: Props) {
+export function SimulationStats({ index, sim, talentsToTest }: Props) {
   const [showCasts, setShowCasts] = useState(false)
 
-  const name = `${index + 1}: ${sim.strategy.name.padEnd(4)}`
-  const talents = prettyTalents(sim.talents)
+  const name = `${index + 1}: ${sim.opts.strategy.name.padEnd(4)}`
+  const talents = prettyTalents(sim.opts.talents, talentsToTest)
   const parts = [
     name,
     talents,
@@ -22,12 +24,11 @@ export function SimulationStats({ index, sim }: Props) {
 
   const iter = sim.medianIteration()
   const abilityStats = iter.abilityStats()
-  console.log(iter.castHistory)
 
   return (
     <div>
       <b>{parts.join(' | ')}</b>
-      <div>{`DPS: ${iter.dps()} (${iter.damage()} dmg)`}</div>
+      <div>{`Median iteration details: ${iter.dps()} dps (${iter.damage()} dmg)`}</div>
       {abilityStats.map((stat) => (
         <div key={stat.name}>
           {stat.name}: {stat.dps} dps ({stat.damagePercent}%) {stat.damage} dmg,{' '}
@@ -42,6 +43,10 @@ export function SimulationStats({ index, sim }: Props) {
       </button>
       {showCasts && (
         <div>
+          <div className="flex">
+            <div className="w-12 font-bold">Time</div>
+            <div className="font-bold">Cast</div>
+          </div>
           {iter.castHistory.map((cast, idx) => (
             <div key={idx} className="flex">
               <div className="w-12">{Math.round(cast.time * 100) / 100}</div>

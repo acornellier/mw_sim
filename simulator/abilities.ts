@@ -1,6 +1,6 @@
 ﻿import { State } from './state'
 import { talentNames } from './talents'
-import { dupArray } from './utils'
+import { multiplyArray } from './utils'
 
 const armorResistance = 0.735
 
@@ -23,7 +23,7 @@ const defaulAbilityOptions: AbilityOptions = {
   hasteFlagged: false,
   maxTargets: 1,
   mwModifier: 0,
-  physicalSchool: false,
+  physicalSchool: true,
   requiredTalent: null,
   spScaling: 0,
 }
@@ -46,14 +46,14 @@ export class Ability {
 
   baseDamage(state: State, _numTargets: number): number {
     let baseDamage =
-      this.opts.apScaling * state.baseAttackPower +
-      this.opts.spScaling * state.baseSpellPower
+      this.opts.apScaling * state.characterStats.attackPower +
+      this.opts.spScaling * state.characterStats.spellPower
     baseDamage += baseDamage * this.opts.mwModifier
     const armorReduction = this.opts.physicalSchool ? armorResistance : 1
     return baseDamage * armorReduction * state.damageMultiplier()
   }
 
-  sideEffects(state: State, numTargets: number): void {}
+  sideEffects(state: State, damageHits: number[]): void {}
 
   hastedCooldown(state: State) {
     const haste_multiplier = this.opts.hasteFlagged
@@ -67,10 +67,10 @@ class TigerPalm extends Ability {
   damageHits(state: State, numTargets: number) {
     const base = super.damageHits(state, numTargets)
     if (!state.isBuffActive(talentNames.faeline_stomp)) return base
-    return dupArray(base, 2)
+    return multiplyArray(base, 2)
   }
 
-  sideEffects(state: State, numTargets: number) {
+  sideEffects(state: State, damageHits: number[]): void {
     state.buffs[talentNames.eye_of_the_tiger] = 8
     if (state.talents[talentNames.teachings]) {
       state.teachings += state.isBuffActive(talentNames.faeline_stomp) ? 2 : 1
@@ -90,25 +90,28 @@ class BlackoutKick extends Ability {
       : 1
     const teachingHits = 1 + state.teachings
 
-    return dupArray(
+    return multiplyArray(
       super.damageHits(state, numTargets),
       faelineTargets * teachingHits
     )
   }
 
-  sideEffects(state: State, numTargets: number) {
-    const resetProbability = this.rskAnyResetProbability(state, numTargets)
-    if (Math.random() < resetProbability)
+  sideEffects(state: State, damageHits: number[]): void {
+    const resetProbability = this.rskAnyResetProbability(
+      state,
+      damageHits.length
+    )
+    console.log(resetProbability)
+    if (Math.random() < resetProbability) {
       state.cooldowns[risingSunKick.name] = 0
+    }
     state.teachings = 0
   }
 
-  rskAnyResetProbability(state: State, numTargets: number) {
-    const hits =
-      Math.min(numTargets, this.opts.maxTargets) * (1 + state.teachings)
+  rskAnyResetProbability(state: State, hits: number) {
     let probability = 0.15
     if (state.isBuffActive(talentNames.faeline_stomp)) probability += 0.6
-    return (1 - probability) ** hits
+    return 1 - probability ** hits
   }
 }
 
@@ -125,7 +128,7 @@ class RisingSunKick extends Ability {
     return super.baseDamage(state, _numTargets) * fastFeetMultiplier
   }
 
-  sideEffects(state: State, numTargets: number) {
+  sideEffects(state: State, damageHits: number[]): void {
     if (state.empoweredRsks <= 0) return
 
     state.cooldowns[this.name] -= 9
@@ -151,7 +154,7 @@ export const risingSunKick = new RisingSunKick('Rising Sun Kick', {
 
 class SpinningCraneKick extends Ability {
   damageHits(state: State, numTargets: number): number[] {
-    return dupArray(super.damageHits(state, numTargets), 4)
+    return multiplyArray(super.damageHits(state, numTargets), 4)
   }
 
   baseDamage(state: State, numTargets: number): number {
@@ -169,7 +172,7 @@ export const spinningCraneKick = new SpinningCraneKick('Spinning Crane Kick', {
 })
 
 class FaelineStomp extends Ability {
-  sideEffects(state: State, numTargets: number) {
+  sideEffects(state: State, damageHits: number[]): void {
     state.buffs[talentNames.faeline_stomp] = 30
   }
 }
@@ -182,7 +185,7 @@ export const faelineStomp = new FaelineStomp('Faeline Stomp', {
 })
 
 class Invoke extends Ability {
-  sideEffects(state: State, numTargets: number) {
+  sideEffects(state: State, damageHits: number[]): void {
     if (state.talents[talentNames.gift_of_the_celestials]) {
       state.cooldowns[this.name] = 60
     }
@@ -204,7 +207,7 @@ export const invoke = new Invoke('Invoke', {
 })
 
 class BonedustBrew extends Ability {
-  sideEffects(state: State, numTargets: number) {
+  sideEffects(state: State, damageHits: number[]): void {
     state.buffs[talentNames.bonedust_brew] = 10
   }
 }
@@ -216,7 +219,7 @@ export const bdb = new BonedustBrew('Bonedust Brew', {
 })
 
 class SummonWhiteTigerStatue extends Ability {
-  sideEffects(state: State, numTargets: number) {
+  sideEffects(state: State, damageHits: number[]): void {
     state.buffs[talentNames.white_tiger_statue] = 30
   }
 }
@@ -231,7 +234,7 @@ export const summonWhiteTigerStatue = new SummonWhiteTigerStatue(
 )
 
 class ThunderFocusTea extends Ability {
-  sideEffects(state: State, numTargets: number) {
+  sideEffects(state: State, damageHits: number[]): void {
     state.firstTftEmpowerAvailable = true
     state.empoweredRsks += 1
 

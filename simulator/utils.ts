@@ -1,12 +1,7 @@
 ﻿import { Talent } from './talents'
-import { talentsToTest } from './sim'
 
-export function dupArray(array: any[], copies: number) {
-  const newArray = array
-  ;[...Array(copies)].forEach(() => {
-    newArray.push(...[...array])
-  })
-  return newArray
+export function multiplyArray(array: any[], copies: number) {
+  return [...Array(copies)].flatMap(() => array)
 }
 
 export function combinator<T>(strings: T[], n: number): T[][] {
@@ -30,7 +25,10 @@ export function combinator<T>(strings: T[], n: number): T[][] {
   return combinations
 }
 
-export function prettyTalents(talents: Record<Talent, number>) {
+export function prettyTalents(
+  talents: Record<Talent, number>,
+  talentsToTest: Talent[]
+) {
   return Object.entries(talents)
     .filter(
       ([talent, value]) => value && talentsToTest.includes(talent as Talent)

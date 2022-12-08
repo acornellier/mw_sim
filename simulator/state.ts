@@ -1,6 +1,15 @@
 ﻿import { Ability } from './abilities'
 import { talentNames } from './talents'
 
+export interface CharacterStats {
+  versatility: number
+  haste: number
+  criticalStrike: number
+  attackPower: number
+  spellPower: number
+  weaponDps: number
+}
+
 interface Hit {
   name: string
   damage: number
@@ -56,7 +65,7 @@ export class Stats {
       {}
     )
 
-    const groupedHits = this.castHistory.reduce<Record<string, Cast[]>>(
+    const groupedHits = this.hitHistory.reduce<Record<string, Cast[]>>(
       (acc, hit) => {
         acc[hit.name] ??= []
         acc[hit.name].push(hit)
@@ -66,16 +75,13 @@ export class Stats {
     )
 
     return Object.entries(groupedHits)
-      .sort(
-        (a, b) =>
-          a[1].reduce((acc, hit) => acc + hit.damage, 0) -
-          b[1].reduce((acc, hit) => acc + hit.damage, 0)
-      )
       .map(([name, hits]) => {
-        const damage = hits.reduce((acc, hit) => acc + hit.damage, 0)
+        const damage = Math.round(
+          hits.reduce((acc, hit) => acc + hit.damage, 0)
+        )
         const damagePercent = Math.round((damage / this.damage()) * 100)
         const dps = Math.round(damage / this.time)
-        const castCount = groupedCasts[name].length
+        const castCount = groupedCasts[name]?.length ?? 0
         const hitCount = hits.length
         return {
           name,
@@ -86,18 +92,13 @@ export class Stats {
           hitCount,
         }
       })
+      .sort((a, b) => b.damage - a.damage)
   }
 }
 
 export class State {
+  characterStats: CharacterStats
   talents: Record<string, number>
-
-  baseVersatility: number = 0.1
-  baseHaste: number = 0.1202
-  baseCriticalStrike: number = 0.1508
-  baseAttackPower: number = 6924
-  baseSpellPower: number = 6658
-  baseWeaponDps: number = 1593.47
 
   time: number = 0
   stats: Stats = new Stats()
@@ -108,7 +109,8 @@ export class State {
   empoweredRsks: number = 0
   firstTftEmpowerAvailable: boolean = false
 
-  constructor(talents: Record<string, number>) {
+  constructor(characterStats: CharacterStats, talents: Record<string, number>) {
+    this.characterStats = characterStats
     this.talents = talents
   }
 
@@ -118,10 +120,12 @@ export class State {
     this.cooldowns[ability.name] = ability.hastedCooldown(this)
 
     const abilityHits = ability.damageHits(this, numTargets)
-    ability.sideEffects(this, numTargets)
+    ability.sideEffects(this, abilityHits)
     const gcd = ability.opts.gcd / (1 + this.haste())
 
-    const weaponHits = [this.baseWeaponDps * gcd * this.damageMultiplier()]
+    const weaponHits = [
+      this.characterStats.weaponDps * gcd * this.damageMultiplier(),
+    ]
     const eyeOfTheTigerHits = [
       this.eyeOfTheTigerDps() * gcd * this.damageMultiplier(),
     ]
@@ -166,7 +170,7 @@ export class State {
   }
 
   versatility() {
-    return this.baseVersatility + this.secretInfusionVersIncrease()
+    return this.characterStats.versatility + this.secretInfusionVersIncrease()
   }
 
   haste() {
@@ -175,11 +179,11 @@ export class State {
     )
       ? 0.33
       : 0
-    return this.baseHaste + invokersDelightIncrease
+    return this.characterStats.haste + invokersDelightIncrease
   }
 
   criticalStrike() {
-    return this.baseCriticalStrike
+    return this.characterStats.criticalStrike
   }
 
   isBuffActive(buffName: string) {
@@ -211,7 +215,7 @@ export class State {
     const attackPowerScaling = 0.25
     const timeBetweenPulses = 2
     return (
-      (attackPowerScaling * this.baseAttackPower * numTargets) /
+      (attackPowerScaling * this.characterStats.attackPower * numTargets) /
       timeBetweenPulses
     )
   }
@@ -220,7 +224,7 @@ export class State {
     if (!this.talents[talentNames.eye_of_the_tiger]) return 0
     const attackPowerScaling = 0.281736
     const duration = 8
-    return (attackPowerScaling * this.baseAttackPower) / duration
+    return (attackPowerScaling * this.characterStats.attackPower) / duration
   }
 
   resonantFistsHits(procers: any[], numTargets: number) {
@@ -228,7 +232,9 @@ export class State {
 
     const attackPowerScaling = 0.15
     const damage =
-      attackPowerScaling * this.baseAttackPower * this.damageMultiplier()
+      attackPowerScaling *
+      this.characterStats.attackPower *
+      this.damageMultiplier()
     const procChance = 0.1
     const procCount = procers.filter(() => Math.random() < procChance).length
     return Array(procCount * numTargets).fill(damage)
