@@ -3,7 +3,7 @@ import { CharacterStats } from './state'
 import { makeTalentCombos, Talent } from './talents'
 import { Simulation } from './simulator'
 
-interface SimulatorOptions {
+export interface SimulatorOptions {
   characterStats: CharacterStats
   talents: Record<Talent, number>
   talentsToTest: Talent[]
@@ -11,20 +11,17 @@ interface SimulatorOptions {
   numTargets: number
   duration: number
   iterations: number
+  setSimProgress: (progress: number | null) => void
 }
 
-export function simulate(options: SimulatorOptions) {
+export async function simulate(options: SimulatorOptions) {
   const startTime = Math.round(new Date().getTime()) / 1000.0
-  const talentCombos = makeTalentCombos(options.talents, options.talentsToTest)
+  options.setSimProgress(0)
 
-  const sims = talentCombos
-    .map((talents) => {
-      const sim = new Simulation({ ...options, talents })
-      sim.run()
-      return sim
-    })
-    .sort((a, b) => a.averageDps() - b.averageDps())
-    .reverse()
+  // const talentCombos = makeTalentCombos(options.talents, options.talentsToTest)
+  const sims = [new Simulation(options)]
+  await sims[0].run()
+  // sim.sort((a, b) => a.averageDps() - b.averageDps()).reverse()
 
   const executionTime = Math.round(new Date().getTime()) / 1000.0 - startTime
   const totalIterationCount = sims.length * options.iterations
@@ -32,6 +29,8 @@ export function simulate(options: SimulatorOptions) {
   console.log(
     `${totalIterationCount} iterations in ${executionTime}s, ${iterPerSec} iter/s`
   )
+
+  options.setSimProgress(null)
 
   return sims
 }

@@ -2,6 +2,7 @@
 import { CharacterStats, State, Stats } from './state'
 import { prettyTalents } from './utils'
 import { Talent } from './talents'
+import { it } from 'node:test'
 
 export interface SimulationOptions {
   apl: APL
@@ -10,6 +11,7 @@ export interface SimulationOptions {
   numTargets: number
   duration: number
   iterations: number
+  setSimProgress: (progress: number) => void
 }
 
 export class Simulation {
@@ -18,14 +20,18 @@ export class Simulation {
 
   constructor(opts: SimulationOptions) {
     this.opts = opts
-    console.log(this.opts.talents)
   }
 
-  run() {
+  async run() {
     const { apl, characterStats, talents, numTargets, duration, iterations } =
       this.opts
 
-    this.stats = [...Array(iterations)].map(() => {
+    for (let i = 0; i < iterations; ++i) {
+      if (i % 100 == 0) {
+        this.opts.setSimProgress(i / iterations)
+        await new Promise((res) => setTimeout(res, 1))
+      }
+
       const state = new State(characterStats, talents)
 
       while (state.time < duration) {
@@ -45,8 +51,8 @@ export class Simulation {
         state.castAbility(logicItem[0], numTargets)
       }
 
-      return state.stats
-    })
+      this.stats.push(state.stats)
+    }
   }
 
   nameWithTalents(talentsToTest: Talent[]) {

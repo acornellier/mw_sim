@@ -11,6 +11,7 @@ import { CharacterStatsForm } from '../components/CharacterStatsForm'
 import { AplSelect } from '../components/AplSelect'
 import { TalentEditor } from '../components/TalentEditor'
 import GitHubButton from 'react-github-btn'
+import { SimulateButton } from '../components/SimulateButton'
 
 const defaultCharacterStats: CharacterStats = {
   versatility: 0.1,
@@ -59,21 +60,8 @@ export default function Home() {
   const [characterStats, setCharacterStats] = useState(defaultCharacterStats)
   const [talents, setTalents] = useState(defaultTalents)
   const [talentsToTest, setTalentsToTest] = useState([])
-  const [sims, setSims] = useState<Simulation[] | null>(null)
 
-  const onSimulate = () => {
-    setSims(
-      simulate({
-        characterStats,
-        talents,
-        talentsToTest,
-        apl,
-        numTargets,
-        duration,
-        iterations,
-      })
-    )
-  }
+  const [sims, setSims] = useState<Simulation[] | null>(null)
 
   const onChangeTargets = (targets: number) => {
     setApl(getBestApl(targets))
@@ -125,12 +113,18 @@ export default function Home() {
           />
           <AplSelect selectedApl={apl} onChange={setApl} />
           <TalentEditor talents={talents} onChangeTalents={setTalents} />
-          <button
-            className="rounded-full px-4 py-1 bg-teal-500 hover:bg-teal-700 w-64 font-bold"
-            onClick={onSimulate}
-          >
-            Simulate!
-          </button>
+          <SimulateButton
+            setSims={setSims}
+            simOptions={{
+              characterStats,
+              talents,
+              talentsToTest,
+              apl,
+              numTargets,
+              duration,
+              iterations,
+            }}
+          />
         </div>
 
         {sims && (
