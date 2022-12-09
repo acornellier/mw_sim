@@ -55,11 +55,13 @@ export class Ability {
 
   sideEffects(state: State, damageHits: number[]): void {}
 
-  hastedCooldown(state: State) {
+  hastedCooldown(state: State, cooldown = this.opts.cooldown) {
     const haste_multiplier = this.opts.hasteFlagged
       ? 1.0 / (1 + state.haste())
       : 1
-    return this.opts.cooldown * haste_multiplier
+    if (this.name === risingSunKick.name)
+      console.log(cooldown * haste_multiplier)
+    return cooldown * haste_multiplier
   }
 }
 
@@ -146,7 +148,7 @@ class RisingSunKick extends Ability {
   sideEffects(state: State, damageHits: number[]): void {
     if (state.empoweredRsks <= 0) return
 
-    state.cooldowns[this.name] -= 9
+    state.cooldowns[this.name] -= this.hastedCooldown(state, 9)
     state.empoweredRsks -= 1
     state.cooldowns['Thunder Focus Tea'] = 30
 

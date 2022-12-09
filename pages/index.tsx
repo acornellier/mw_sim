@@ -84,6 +84,12 @@ export default function Home() {
           <GitHubButton href="https://github.com/acornellier/mw_sim" />
         </div>
 
+        <h1 className="text-xl font-bold">
+          WARNING: This sim is ONLY for damage. You are a healer, and your main
+          job is to heal. Do not let anything here influence your spell or stat
+          priority.
+        </h1>
+
         <div className="flex flex-col gap-4">
           <div className="flex gap-4">
             <NumericInput
