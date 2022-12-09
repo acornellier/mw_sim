@@ -59,8 +59,6 @@ export class Ability {
     const haste_multiplier = this.opts.hasteFlagged
       ? 1.0 / (1 + state.haste())
       : 1
-    if (this.name === risingSunKick.name)
-      console.log(cooldown * haste_multiplier)
     return cooldown * haste_multiplier
   }
 }
