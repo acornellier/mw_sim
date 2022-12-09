@@ -71,7 +71,10 @@ class TigerPalm extends Ability {
   }
 
   sideEffects(state: State, damageHits: number[]): void {
-    state.buffs[talentNames.eye_of_the_tiger] = 8
+    if (state.talents[talentNames.eye_of_the_tiger]) {
+      state.buffs[talentNames.eye_of_the_tiger] = 8
+    }
+
     if (state.talents[talentNames.teachings]) {
       state.teachings += state.isBuffActive(talentNames.faeline_stomp) ? 2 : 1
     }
@@ -181,6 +184,7 @@ export const faelineStomp = new FaelineStomp('Faeline Stomp', {
   cooldown: 30,
   maxTargets: 5,
   physicalSchool: false,
+  requiredTalent: talentNames.faeline_stomp,
 })
 
 class Invoke extends Ability {
@@ -202,7 +206,6 @@ class Invoke extends Ability {
 export const invoke = new Invoke('Invoke', {
   cooldown: 180,
   gcd: 1,
-  requiredTalent: talentNames.invokers_delight,
 })
 
 class BonedustBrew extends Ability {
@@ -261,6 +264,7 @@ export const zenPulse = new Ability('Zen Pulse', {
   cooldown: 30,
   maxTargets: Infinity,
   physicalSchool: false,
+  requiredTalent: talentNames.zen_pulse,
 })
 
 export const chiBurst = new Ability('Chi Burst', {
@@ -269,3 +273,17 @@ export const chiBurst = new Ability('Chi Burst', {
   maxTargets: Infinity,
   physicalSchool: false,
 })
+
+export const allAbilities: Ability[] = [
+  tigerPalm,
+  blackoutKick,
+  risingSunKick,
+  spinningCraneKick,
+  faelineStomp,
+  invoke,
+  bdb,
+  summonWhiteTigerStatue,
+  tft,
+  zenPulse,
+  chiBurst,
+]

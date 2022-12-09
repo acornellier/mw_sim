@@ -126,12 +126,8 @@ export class State {
     const weaponHits = [
       this.characterStats.weaponDps * gcd * this.damageMultiplier(),
     ]
-    const eyeOfTheTigerHits = [
-      this.eyeOfTheTigerDps() * gcd * this.damageMultiplier(),
-    ]
-    const whiteTigerHits = [
-      this.whiteTigerDps(numTargets) * gcd * this.damageMultiplier(),
-    ]
+    const eyeOfTheTigerHits = this.eyeOfTheTigerHits(gcd)
+    const whiteTigerHits = this.whiteTigerHits(numTargets, gcd)
 
     const bdbProcers = abilityHits.concat(weaponHits).concat(whiteTigerHits)
     const bdbHits = this.bonedustBrewDamageHits(bdbProcers)
@@ -210,21 +206,23 @@ export class State {
     return increase
   }
 
-  whiteTigerDps(numTargets: number) {
-    if (!this.isBuffActive(talentNames.white_tiger_statue)) return 0
+  whiteTigerHits(numTargets: number, gcd: number) {
+    if (!this.isBuffActive(talentNames.white_tiger_statue)) return []
     const attackPowerScaling = 0.25
     const timeBetweenPulses = 2
-    return (
+    const dps =
       (attackPowerScaling * this.characterStats.attackPower * numTargets) /
       timeBetweenPulses
-    )
+    return [dps * gcd * this.damageMultiplier()]
   }
 
-  eyeOfTheTigerDps() {
-    if (!this.talents[talentNames.eye_of_the_tiger]) return 0
+  eyeOfTheTigerHits(gcd: number) {
+    if (!this.isBuffActive(talentNames.eye_of_the_tiger)) return []
     const attackPowerScaling = 0.281736
     const duration = 8
-    return (attackPowerScaling * this.characterStats.attackPower) / duration
+    const dps =
+      (attackPowerScaling * this.characterStats.attackPower) / duration
+    return [dps * gcd * this.damageMultiplier()]
   }
 
   resonantFistsHits(procers: any[], numTargets: number) {

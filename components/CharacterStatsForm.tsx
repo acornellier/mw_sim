@@ -13,8 +13,15 @@ export function CharacterStatsForm({ characterStats, onChange }: Props) {
       [field]: value,
     })
 
+  const onChangePercentStat =
+    (field: keyof CharacterStats) => (value: number) =>
+      onChange({
+        ...characterStats,
+        [field]: value / 100,
+      })
+
   return (
-    <div className="flex gap-4">
+    <div className="flex gap-4 flex-wrap">
       <NumericInput
         label="Attack power"
         value={characterStats.attackPower}
@@ -26,19 +33,19 @@ export function CharacterStatsForm({ characterStats, onChange }: Props) {
         onChange={onChangeStat('spellPower')}
       />
       <NumericInput
-        label="Haste"
-        value={characterStats.haste}
-        onChange={onChangeStat('haste')}
+        label="Haste (%)"
+        value={characterStats.haste * 100}
+        onChange={onChangePercentStat('haste')}
       />
       <NumericInput
-        label="Versatility"
-        value={characterStats.versatility}
-        onChange={onChangeStat('versatility')}
+        label="Versatility (%)"
+        value={characterStats.versatility * 100}
+        onChange={onChangePercentStat('versatility')}
       />
       <NumericInput
-        label="Critical Strike"
-        value={characterStats.criticalStrike}
-        onChange={onChangeStat('criticalStrike')}
+        label="Critical strike (%)"
+        value={characterStats.criticalStrike * 100}
+        onChange={onChangePercentStat('criticalStrike')}
       />
       <NumericInput
         label="Weapon DPS"

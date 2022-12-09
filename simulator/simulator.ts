@@ -1,10 +1,10 @@
-﻿import { Strategy } from './strategies'
+﻿import { APL } from './apl'
 import { CharacterStats, State, Stats } from './state'
 import { prettyTalents } from './utils'
 import { Talent } from './talents'
 
 export interface SimulationOptions {
-  strategy: Strategy
+  apl: APL
   characterStats: CharacterStats
   talents: Record<string, number>
   numTargets: number
@@ -18,23 +18,18 @@ export class Simulation {
 
   constructor(opts: SimulationOptions) {
     this.opts = opts
+    console.log(this.opts.talents)
   }
 
   run() {
-    const {
-      strategy,
-      characterStats,
-      talents,
-      numTargets,
-      duration,
-      iterations,
-    } = this.opts
+    const { apl, characterStats, talents, numTargets, duration, iterations } =
+      this.opts
 
     this.stats = [...Array(iterations)].map(() => {
       const state = new State(characterStats, talents)
 
       while (state.time < duration) {
-        const logicItem = strategy.logic.find(([ability, condition]) => {
+        const logicItem = apl.logic.find(([ability, condition]) => {
           return (
             !state.isOnCd(ability.name) &&
             (!ability.opts.requiredTalent ||
@@ -44,7 +39,7 @@ export class Simulation {
         })
 
         if (!logicItem) {
-          throw 'No ability found by strategy'
+          throw 'No ability found by APL'
         }
 
         state.castAbility(logicItem[0], numTargets)
@@ -56,7 +51,7 @@ export class Simulation {
 
   nameWithTalents(talentsToTest: Talent[]) {
     const talents = prettyTalents(this.opts.talents, talentsToTest)
-    return [this.opts.strategy.name, talents].join(' | ')
+    return [this.opts.apl.name, talents].join(' | ')
   }
 
   averageDps() {

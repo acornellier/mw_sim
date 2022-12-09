@@ -1,12 +1,13 @@
-﻿import { Strategy } from './strategies'
+﻿import { APL } from './apl'
 import { CharacterStats } from './state'
 import { makeTalentCombos, Talent } from './talents'
 import { Simulation } from './simulator'
 
 interface SimulatorOptions {
   characterStats: CharacterStats
+  talents: Record<Talent, number>
   talentsToTest: Talent[]
-  strategy: Strategy
+  apl: APL
   numTargets: number
   duration: number
   iterations: number
@@ -14,14 +15,11 @@ interface SimulatorOptions {
 
 export function simulate(options: SimulatorOptions) {
   const startTime = Math.round(new Date().getTime()) / 1000.0
-  const talentCombos = makeTalentCombos(options.talentsToTest)
+  const talentCombos = makeTalentCombos(options.talents, options.talentsToTest)
 
   const sims = talentCombos
     .map((talents) => {
-      const sim = new Simulation({
-        ...options,
-        talents,
-      })
+      const sim = new Simulation({ ...options, talents })
       sim.run()
       return sim
     })

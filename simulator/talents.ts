@@ -1,4 +1,5 @@
 ﻿import { combinator } from './utils'
+import { faelineStomp } from './abilities'
 
 const ferocity_of_xuen = 'Ferocity of Xuen'
 const fast_feet = 'Fast Feet'
@@ -6,6 +7,7 @@ const resonant_fists = 'Resonant Fists'
 const white_tiger_statue = 'White Tiger Statue'
 const eye_of_the_tiger = 'Eye of the Tiger'
 const teachings = 'Teachings'
+const zen_pulse = 'Zen Pulse'
 const faeline_stomp = 'Faeline Stomp'
 const gift_of_the_celestials = 'Gift of the Celestials'
 const invokers_delight = 'Invokers Delight'
@@ -19,43 +21,66 @@ const focused_thunder = 'Focused Thunder'
 export const talentNames = {
   ferocity_of_xuen,
   fast_feet,
+  eye_of_the_tiger,
   resonant_fists,
   white_tiger_statue,
-  eye_of_the_tiger,
   teachings,
-  faeline_stomp,
+  zen_pulse,
   gift_of_the_celestials,
-  invokers_delight,
+  faeline_stomp,
   secret_infusion,
   secret_infusion_2,
+  invokers_delight,
   bonedust_brew,
   attenuation,
   tea_of_plenty,
   focused_thunder,
 } as const
 
-export type Talent = typeof talentNames[keyof typeof talentNames]
+export const talentGroups = [
+  [
+    ferocity_of_xuen,
+    fast_feet,
+    eye_of_the_tiger,
+    resonant_fists,
+    white_tiger_statue,
+  ],
+  [teachings, zen_pulse, gift_of_the_celestials, faeline_stomp],
+  [faeline_stomp],
+  [secret_infusion, secret_infusion_2, invokers_delight],
+  [tea_of_plenty, focused_thunder, bonedust_brew, attenuation],
+] as const
 
-const defaultTalents: Record<Talent, number> = {
-  [talentNames.ferocity_of_xuen]: 1,
-  [talentNames.fast_feet]: 1,
-  [talentNames.resonant_fists]: 1,
-  [talentNames.white_tiger_statue]: 1,
-  [talentNames.eye_of_the_tiger]: 1,
-  [talentNames.teachings]: 1,
-  [talentNames.faeline_stomp]: 1,
-  [talentNames.gift_of_the_celestials]: 1,
-  [talentNames.invokers_delight]: 0,
-  [talentNames.secret_infusion]: 0,
-  [talentNames.secret_infusion_2]: 0,
-  [talentNames.bonedust_brew]: 0,
-  [talentNames.attenuation]: 0,
-  [talentNames.tea_of_plenty]: 0,
-  [talentNames.focused_thunder]: 0,
+export type Talent = typeof talentNames[keyof typeof talentNames]
+export type TalentMap = Record<Talent, number>
+
+export function getDependencies(talent: Talent): Talent[] {
+  if (talent === talentNames.attenuation) {
+    return recDependencies(talentNames.bonedust_brew)
+  }
+
+  if (talent === talentNames.secret_infusion_2) {
+    return recDependencies(talentNames.secret_infusion)
+  }
+
+  if (talent === talentNames.invokers_delight) {
+    return recDependencies(talentNames.secret_infusion_2)
+  }
+
+  return []
 }
 
-export const makeTalentCombos = (talentsToTest: Talent[]) =>
-  combinator(talentsToTest, 4)
+function recDependencies(talent: Talent): Talent[] {
+  return [talent].concat(getDependencies(talent))
+}
+
+export const makeTalentCombos = (
+  defaultTalents: Record<Talent, number>,
+  talentsToTest: Talent[]
+) => {
+  if (talentsToTest.length === 0) return [defaultTalents]
+
+  return combinator(talentsToTest, 4)
     .filter((talentCombo) => {
       if (
         talentCombo.includes(talentNames.attenuation) &&
@@ -74,13 +99,6 @@ export const makeTalentCombos = (talentsToTest: Talent[]) =>
       if (
         talentCombo.includes(talentNames.invokers_delight) &&
         !talentCombo.includes(talentNames.secret_infusion_2)
-      ) {
-        return false
-      }
-
-      if (
-        talentCombo.includes(talentNames.attenuation) &&
-        !talentCombo.includes(talentNames.bonedust_brew)
       ) {
         return false
       }
@@ -108,3 +126,4 @@ export const makeTalentCombos = (talentsToTest: Talent[]) =>
         ),
       }
     })
+}
