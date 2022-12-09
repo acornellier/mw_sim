@@ -34,8 +34,8 @@ export function TalentEditor({ talents, onChangeTalents }: Props) {
 
     onChangeTalents({
       ...talents,
-      [talent]: checked ? 1 : 0,
       ...affectedTalents,
+      [talent]: checked ? 1 : 0,
     })
   }
 

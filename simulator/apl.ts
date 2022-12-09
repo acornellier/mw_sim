@@ -31,7 +31,9 @@ const faelineLogic: AbilityWithCondition = [
 
 const tigerPalmTeachingsLogic: AbilityWithCondition = [
   tigerPalm,
-  (state) => state.teachings <= 1,
+  (state) =>
+    state.teachings <= 1 ||
+    (state.teachings <= 2 && !state.talents[talentNames.awakened_faeline]),
   'Only if teaching stacks <= 1',
 ]
 
@@ -45,7 +47,7 @@ const rskInfusionLogic: AbilityWithCondition = [
 
 const invokeLogic: AbilityWithCondition = [
   invoke,
-  (state) => state.talents[invoke.name] > 0,
+  (state) => state.talents[talentNames.invokers_delight] > 0,
   "Only with Invoker's Delight talented",
 ]
 

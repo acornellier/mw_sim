@@ -66,7 +66,13 @@ export class Ability {
 class TigerPalm extends Ability {
   damageHits(state: State, numTargets: number) {
     const base = super.damageHits(state, numTargets)
-    if (!state.isBuffActive(talentNames.faeline_stomp)) return base
+    if (
+      !state.isBuffActive(talentNames.faeline_stomp) ||
+      !state.talents[talentNames.awakened_faeline]
+    ) {
+      return base
+    }
+
     return multiplyArray(base, 2)
   }
 
@@ -76,7 +82,7 @@ class TigerPalm extends Ability {
     }
 
     if (state.talents[talentNames.teachings]) {
-      state.teachings += state.isBuffActive(talentNames.faeline_stomp) ? 2 : 1
+      state.teachings += damageHits.length
     }
   }
 }
@@ -88,10 +94,12 @@ export const tigerPalm = new TigerPalm('Tiger Palm', {
 
 class BlackoutKick extends Ability {
   damageHits(state: State, numTargets: number): number[] {
-    const faelineTargets = state.isBuffActive(talentNames.faeline_stomp)
-      ? Math.min(3, numTargets)
-      : 1
     const teachingHits = 1 + state.teachings
+    const faelineTargets =
+      state.isBuffActive(talentNames.faeline_stomp) &&
+      state.talents[talentNames.ancient_concordance]
+        ? Math.min(3, numTargets)
+        : 1
 
     return multiplyArray(
       super.damageHits(state, numTargets),
@@ -112,7 +120,12 @@ class BlackoutKick extends Ability {
 
   rskAnyResetProbability(state: State, hits: number) {
     let probability = 0.15
-    if (state.isBuffActive(talentNames.faeline_stomp)) probability += 0.6
+    if (
+      state.isBuffActive(talentNames.faeline_stomp) &&
+      state.talents[talentNames.ancient_concordance]
+    ) {
+      probability += 0.6
+    }
     return 1 - probability ** hits
   }
 }

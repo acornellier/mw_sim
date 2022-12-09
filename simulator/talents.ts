@@ -1,5 +1,4 @@
 ﻿import { combinator } from './utils'
-import { faelineStomp } from './abilities'
 
 const ferocity_of_xuen = 'Ferocity of Xuen'
 const fast_feet = 'Fast Feet'
@@ -9,6 +8,8 @@ const eye_of_the_tiger = 'Eye of the Tiger'
 const teachings = 'Teachings'
 const zen_pulse = 'Zen Pulse'
 const faeline_stomp = 'Faeline Stomp'
+const ancient_concordance = 'Ancient Concordance'
+const awakened_faeline = 'Awakened Faeline'
 const gift_of_the_celestials = 'Gift of the Celestials'
 const invokers_delight = 'Invokers Delight'
 const secret_infusion = 'Secret Infusion'
@@ -28,6 +29,8 @@ export const talentNames = {
   zen_pulse,
   gift_of_the_celestials,
   faeline_stomp,
+  ancient_concordance,
+  awakened_faeline,
   secret_infusion,
   secret_infusion_2,
   invokers_delight,
@@ -37,7 +40,7 @@ export const talentNames = {
   focused_thunder,
 } as const
 
-export const talentGroups = [
+export const talentGroups: Talent[][] = [
   [
     ferocity_of_xuen,
     fast_feet,
@@ -45,33 +48,27 @@ export const talentGroups = [
     resonant_fists,
     white_tiger_statue,
   ],
-  [teachings, zen_pulse, gift_of_the_celestials, faeline_stomp],
-  [faeline_stomp],
+  [teachings, zen_pulse, gift_of_the_celestials],
+  [faeline_stomp, ancient_concordance, awakened_faeline],
   [secret_infusion, secret_infusion_2, invokers_delight],
   [tea_of_plenty, focused_thunder, bonedust_brew, attenuation],
-] as const
+]
+
+const dependencies = {
+  [talentNames.ancient_concordance]: talentNames.faeline_stomp,
+  [talentNames.awakened_faeline]: talentNames.ancient_concordance,
+  [talentNames.secret_infusion_2]: talentNames.secret_infusion,
+  [talentNames.invokers_delight]: talentNames.secret_infusion_2,
+  [talentNames.attenuation]: talentNames.bonedust_brew,
+} as const
 
 export type Talent = typeof talentNames[keyof typeof talentNames]
 export type TalentMap = Record<Talent, number>
 
 export function getDependencies(talent: Talent): Talent[] {
-  if (talent === talentNames.attenuation) {
-    return recDependencies(talentNames.bonedust_brew)
-  }
-
-  if (talent === talentNames.secret_infusion_2) {
-    return recDependencies(talentNames.secret_infusion)
-  }
-
-  if (talent === talentNames.invokers_delight) {
-    return recDependencies(talentNames.secret_infusion_2)
-  }
-
-  return []
-}
-
-function recDependencies(talent: Talent): Talent[] {
-  return [talent].concat(getDependencies(talent))
+  // @ts-ignore
+  const dependency = dependencies[talent]
+  return dependency ? [talent].concat(getDependencies(dependency)) : [talent]
 }
 
 export const makeTalentCombos = (
