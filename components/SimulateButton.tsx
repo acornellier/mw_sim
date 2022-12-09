@@ -17,7 +17,7 @@ export function SimulateButton({ simOptions, setSims }: Props) {
 
   return simProgress === null ? (
     <button
-      className="rounded-full px-4 py-1 bg-teal-500 hover:bg-teal-700 w-64 font-bold"
+      className="w-64 rounded-full px-4 py-2 bg-teal-500 hover:bg-teal-700 font-bold text-lg"
       onClick={onSimulate}
     >
       Simulate!
@@ -25,7 +25,7 @@ export function SimulateButton({ simOptions, setSims }: Props) {
   ) : (
     <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
       <div
-        className="bg-blue-600 h-2.5 rounded-full"
+        className="bg-teal-600 h-2.5 rounded-full"
         style={{
           transition: 'width 0.03s linear',
           width: `${simProgress * 100}%`,
